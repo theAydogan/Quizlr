@@ -1,70 +1,197 @@
-# Getting Started with Create React App
+# 🎮 Quizlr - Real-Time Multiplayer Quiz Game
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A real-time multiplayer quiz game built with React and Socket.IO. Players can join rooms, answer questions against a timer, and compete for the top spot on the leaderboard!
 
-## Available Scripts
+## ✨ Features
 
-In the project directory, you can run:
+- 🎯 **Real-time Multiplayer** - Play with friends in the same room
+- 👑 **Host System** - First player becomes the host who controls game start
+- ⏱️ **60-Second Timer** - Answer questions before time runs out
+- 🚀 **Smart Timer Skip** - If all players answer early, the timer skips automatically
+- 🏆 **Live Leaderboard** - See rankings sorted by score in real-time
+- 📱 **Mobile Friendly** - Play on any device (phone, tablet, desktop)
+- 🎨 **Beautiful UI** - Modern gradient design with smooth animations
+- 🏅 **Medal System** - Gold, silver, and bronze medals for top 3 players
 
-### `npm start`
+## 🚀 Getting Started
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Prerequisites
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- Node.js (v14 or higher)
+- npm or yarn
 
-### `npm test`
+### Installation
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. Clone the repository:
+```bash
+git clone https://github.com/YOUR_USERNAME/quizlr.git
+cd quizlr
+```
 
-### `npm run build`
+2. Install dependencies:
+```bash
+npm install
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Running the Application
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+You need to run **two servers** - one for Socket.IO and one for React:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+**Terminal 1 - Start the Socket.IO server:**
+```bash
+node src/server.js
+```
+Server will run on `http://localhost:3001`
 
-### `npm run eject`
+**Terminal 2 - Start the React app:**
+```bash
+npm start
+```
+App will open on `http://localhost:3000`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 📱 Playing on Mobile (Local Network)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+To play with friends on your local network:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. Find your computer's IP address:
+   ```bash
+   ipconfig getifaddr en0  # macOS
+   ipconfig               # Windows
+   ```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+2. Start the servers with network access:
+   ```bash
+   # Terminal 1
+   node src/server.js
+   
+   # Terminal 2
+   HOST=0.0.0.0 npm start
+   ```
 
-## Learn More
+3. On your phone's browser, navigate to:
+   ```
+   http://YOUR_IP_ADDRESS:3000
+   ```
+   (e.g., `http://192.168.1.5:3000`)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Make sure all devices are on the same WiFi network!
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 🎮 How to Play
 
-### Code Splitting
+1. **Join a Room**
+   - Enter your username
+   - Enter a room code (any word)
+   - Click "Join"
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+2. **Lobby**
+   - Wait for other players to join
+   - First player is automatically the host 👑
+   - Host clicks "Start Game" when ready
 
-### Analyzing the Bundle Size
+3. **Answer Questions**
+   - Read the question carefully
+   - Select one of the 4 options
+   - Submit your answer before time runs out
+   - 60-second timer per question
+   - Timer skips if everyone answers early
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+4. **Results**
+   - See the final leaderboard
+   - Top 3 get medals 🥇🥈🥉
+   - Click "Play Again" to start a new game
 
-### Making a Progressive Web App
+## 🏗️ Tech Stack
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- **Frontend:** React, React Router
+- **Backend:** Node.js, Express, Socket.IO
+- **Real-time Communication:** Socket.IO
+- **Styling:** Custom CSS with animations
 
-### Advanced Configuration
+## 📁 Project Structure
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```
+quizlr/
+├── src/
+│   ├── Pages/
+│   │   ├── Home.js          # Landing page & room join
+│   │   ├── Lobby.js         # Pre-game lobby
+│   │   ├── Question.js      # Quiz gameplay
+│   │   └── Results.js       # Final leaderboard
+│   ├── App.js               # Main app component
+│   ├── server.js            # Socket.IO server
+│   └── index.js             # React entry point
+├── public/
+└── package.json
+```
 
-### Deployment
+## 🎯 Game Features in Detail
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### Host System
+- First player to join a room becomes the host
+- Host controls when the game starts
+- Host can play along or just manage the game
+- Host is excluded from leaderboard rankings
 
-### `npm run build` fails to minify
+### Question Timer
+- Each question has a 60-second timer
+- Timer turns red and pulses when < 10 seconds remain
+- If all players answer early, timer skips automatically
+- 5-second pause between questions to review answers
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Scoring System
+- 1 point per correct answer
+- No points for wrong answers or no answer
+- Final scores displayed on leaderboard
+- Players ranked from highest to lowest score
+
+## 🔧 Customization
+
+### Adding More Questions
+
+Edit `src/server.js` and add to the `questions` array:
+
+```javascript
+const questions = [
+  {
+    id: 0,
+    question: "Your question here?",
+    options: [
+      { id: 0, text: "Option A" },
+      { id: 1, text: "Option B" },
+      { id: 2, text: "Option C" },
+      { id: 3, text: "Option D" }
+    ],
+    correctAnswer: 0  // Index of correct answer (0-3)
+  },
+  // Add more questions...
+];
+```
+
+### Changing Timer Duration
+
+In `src/server.js`, find `timeLimit: 60` and change to your desired seconds.
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to:
+- Report bugs
+- Suggest new features
+- Submit pull requests
+
+## 📝 License
+
+This project is open source and available under the MIT License.
+
+## 👨‍💻 Author
+
+Built with ❤️ by [Your Name]
+
+## 🙏 Acknowledgments
+
+- Socket.IO for real-time communication
+- React team for the amazing framework
+- All the players who make this game fun!
+
+---
+
+**Have fun playing Quizlr!** 🎉
