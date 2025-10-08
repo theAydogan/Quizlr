@@ -13,7 +13,6 @@ function App() {
   // Global state
   const [socket, setSocket] = useState(null);
   const [username, setUsername] = useState("");
-  const [room, setRoom] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [score, setScore] = useState(0);
   const [players, setPlayers] = useState([]);
@@ -44,8 +43,6 @@ function App() {
               socket={socket}
               username={username}
               setUsername={setUsername}
-              room={room}
-              setRoom={setRoom}
               players={players}
               setPlayers={setPlayers}
               setIsHost={setIsHost}
@@ -58,7 +55,7 @@ function App() {
             <Lobby
               socket={socket}
               username={username}
-              room={room}
+              room="1"
               players={players}
               setPlayers={setPlayers}
               isHost={isHost}
@@ -71,7 +68,7 @@ function App() {
             <Question
               socket={socket}
               username={username}
-              room={room}
+              room="1"
               players={players}
               setPlayers={setPlayers}
               currentQuestion={currentQuestion}
