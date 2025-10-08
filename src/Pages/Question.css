@@ -322,6 +322,27 @@
     font-size: 1.1rem;
 }
 
+.host-message {
+    text-align: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.host-message h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+}
+
+.host-message p {
+    margin: 0;
+    font-size: 1.1rem;
+    opacity: 0.95;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .question-container {

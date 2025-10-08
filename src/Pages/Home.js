@@ -6,6 +6,15 @@ const Home = ({ socket, username, setUsername, setPlayers, players, setIsHost })
     const navigate = useNavigate();
     const [currentUrl, setCurrentUrl] = useState('');
     const [isJoining, setIsJoining] = useState(false);
+    const [autoRejoining, setAutoRejoining] = useState(false);
+    const [hasAttemptedAutoRejoin, setHasAttemptedAutoRejoin] = useState(false);
+    const [localUsername, setLocalUsername] = useState(username);
+    
+    
+    // Sync local username with prop username
+    useEffect(() => {
+        setLocalUsername(username);
+    }, [username]);
     
     useEffect(() => {
         // Get the device's IP address and construct the proper URL
@@ -76,6 +85,40 @@ const Home = ({ socket, username, setUsername, setPlayers, players, setIsHost })
         getDeviceIP();
     }, []);
     
+    // Auto-rejoin if username exists and socket is ready (only run once)
+    useEffect(() => {
+        if (!socket || !username || autoRejoining || isJoining || hasAttemptedAutoRejoin) return;
+        
+        const savedGameState = localStorage.getItem('quizlr_game_state');
+        const savedUsername = localStorage.getItem('quizlr_username');
+        const currentPath = window.location.pathname;
+        
+        // Only auto-rejoin if:
+        // 1. We're on the home page
+        // 2. Have a saved session
+        // 3. Current username matches saved username (not typing a new one)
+        if (savedGameState && currentPath === '/' && username === savedUsername) {
+            const gameState = JSON.parse(savedGameState);
+            const timeSinceLastSave = Date.now() - gameState.timestamp;
+            
+            // Auto-rejoin if session is less than 1 hour old
+            if (timeSinceLastSave < 3600000) {
+                setAutoRejoining(true);
+                setHasAttemptedAutoRejoin(true);
+                
+                // Wait a bit for socket to be fully ready
+                setTimeout(() => {
+                    socket.emit("joinGame", { username, room: "1" });
+                    navigate("/lobby");
+                }, 500);
+            } else {
+                setHasAttemptedAutoRejoin(true);
+            }
+        } else {
+            setHasAttemptedAutoRejoin(true);
+        }
+    }, [socket, username, navigate, autoRejoining, isJoining, hasAttemptedAutoRejoin]);
+    
     useEffect(() => {
         if (!socket) return;
         
@@ -107,19 +150,48 @@ const Home = ({ socket, username, setUsername, setPlayers, players, setIsHost })
     
     function joinRoom() {
         if (!username.trim()) {
-            alert("Please enter a username!");
             return;
         }
         
         if (!socket) {
-            alert("Socket not connected yet. Please wait a moment and try again.");
             return;
         }
         
         setIsJoining(true);
-        console.log("Joining room", username, "1");
+        
+        // Save username and game state to localStorage when joining
+        localStorage.setItem('quizlr_username', username);
+        const gameState = {
+            username,
+            score: 0,
+            timestamp: Date.now()
+        };
+        localStorage.setItem('quizlr_game_state', JSON.stringify(gameState));
+        
+        // Also fetch and save the current server session ID
+        const socketUrl = window.location.hostname === 'localhost' 
+            ? "http://localhost:3001" 
+            : `http://${window.location.hostname}:3001`;
+        
+        fetch(`${socketUrl}/api/session`)
+            .then(res => res.json())
+            .then(data => {
+                localStorage.setItem('quizlr_server_session', data.sessionId);
+            })
+            .catch(err => console.error("Error fetching server session:", err));
+        
         socket.emit("joinGame", { username, room: "1" });
         navigate("/lobby");
+    }
+    
+    function clearSession() {
+        localStorage.removeItem('quizlr_username');
+        localStorage.removeItem('quizlr_game_state');
+        localStorage.removeItem('quizlr_server_session');
+        setUsername('');
+        setAutoRejoining(false);
+        setHasAttemptedAutoRejoin(false);
+        console.log("Session cleared");
     }
     
     return (
@@ -149,41 +221,113 @@ const Home = ({ socket, username, setUsername, setPlayers, players, setIsHost })
             
             {/* Join Form */}
             <div style={{ maxWidth: '400px', margin: '0 auto' }}>
-                <div style={{ marginBottom: '20px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Enter Your Name</label>
-                    <input 
-                        type="text" 
-                        value={username} 
-                        onChange={(e) => setUsername(e.target.value)}
-                        style={{ 
-                            width: '100%', 
-                            padding: '12px', 
-                            border: '2px solid #ddd', 
-                            borderRadius: '5px',
-                            fontSize: '16px'
-                        }}
-                        placeholder="What should we call you?"
-                        onKeyPress={(e) => e.key === 'Enter' && joinRoom()}
-                    />
-                </div>
-                
-                <button 
-                    onClick={joinRoom}
-                    disabled={isJoining || !username.trim()}
-                    style={{
-                        width: '100%',
-                        padding: '12px',
-                        backgroundColor: isJoining || !username.trim() ? '#ccc' : '#4CAF50',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '5px',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        cursor: isJoining || !username.trim() ? 'not-allowed' : 'pointer'
-                    }}
-                >
-                    {isJoining ? 'Joining...' : 'Join Quiz Game'}
-                </button>
+                {autoRejoining ? (
+                    <div style={{ 
+                        padding: '20px', 
+                        background: '#f0f4ff', 
+                        borderRadius: '10px',
+                        border: '2px solid #667eea'
+                    }}>
+                        <h3 style={{ color: '#667eea', marginTop: 0 }}>🔄 Reconnecting...</h3>
+                        <p style={{ margin: '10px 0' }}>Welcome back, <strong>{username}</strong>!</p>
+                        <p style={{ fontSize: '14px', color: '#666' }}>Automatically rejoining the game...</p>
+                    </div>
+                ) : username ? (
+                    <div>
+                        <div style={{ 
+                            padding: '15px', 
+                            background: '#e8f5e9', 
+                            borderRadius: '10px',
+                            marginBottom: '15px',
+                            border: '2px solid #4CAF50'
+                        }}>
+                            <p style={{ margin: 0, color: '#2e7d32' }}>
+                                Welcome back, <strong>{username}</strong>! 👋
+                            </p>
+                        </div>
+                        
+                        <button 
+                            onClick={joinRoom}
+                            disabled={isJoining}
+                            style={{
+                                width: '100%',
+                                padding: '12px',
+                                backgroundColor: isJoining ? '#ccc' : '#4CAF50',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '5px',
+                                fontSize: '16px',
+                                fontWeight: 'bold',
+                                cursor: isJoining ? 'not-allowed' : 'pointer',
+                                marginBottom: '10px'
+                            }}
+                        >
+                            {isJoining ? 'Joining...' : 'Join Quiz Game'}
+                        </button>
+                        
+                        <button 
+                            onClick={clearSession}
+                            style={{
+                                width: '100%',
+                                padding: '10px',
+                                backgroundColor: 'transparent',
+                                color: '#666',
+                                border: '2px solid #ddd',
+                                borderRadius: '5px',
+                                fontSize: '14px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Change Name
+                        </button>
+                    </div>
+                ) : (
+                    <div>
+                        <div style={{ marginBottom: '20px' }}>
+                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Enter Your Name</label>
+                            <input 
+                                type="text" 
+                                value={localUsername} 
+                                onChange={(e) => setLocalUsername(e.target.value)}
+                                style={{ 
+                                    width: '100%', 
+                                    padding: '12px', 
+                                    border: '2px solid #ddd', 
+                                    borderRadius: '5px',
+                                    fontSize: '16px'
+                                }}
+                                placeholder="What should we call you?"
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                        setUsername(localUsername);
+                                        joinRoom();
+                                    }
+                                }}
+                            />
+                        </div>
+                        
+                        <button 
+                            onClick={() => {
+                                setUsername(localUsername);
+                                setTimeout(() => joinRoom(), 0);
+                            }}
+                            disabled={isJoining || !localUsername.trim()}
+                            style={{
+                                width: '100%',
+                                padding: '12px',
+                                backgroundColor: isJoining || !localUsername.trim() ? '#ccc' : '#4CAF50',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '5px',
+                                fontSize: '16px',
+                                fontWeight: 'bold',
+                                cursor: isJoining || !localUsername.trim() ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            {isJoining ? 'Joining...' : 'Join Quiz Game'}
+                        </button>
+                    </div>
+                )}
             </div>
             
             {/* Players List */}

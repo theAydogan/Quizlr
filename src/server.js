@@ -35,6 +35,14 @@ app.get('/api/ip', (req, res) => {
     });
 });
 
+// API endpoint to get the server session ID
+app.get('/api/session', (req, res) => {
+    res.json({ 
+        sessionId: serverSessionId,
+        timestamp: Date.now()
+    });
+});
+
 const server = http.createServer(app);
 
 // Create Socket.IO server
@@ -89,7 +97,7 @@ const questions = [
       { id: 2, text: "Mobile Carrier Pickup" },
       { id: 3, text: "Immediate Delivery" }
     ],
-    correctAnswer: 1
+    correctAnswer: 2
   },
   {
     id: 4,
@@ -110,6 +118,9 @@ const gameRooms = {}; // { roomId: { players: [], host: null, currentQuestionInd
 // Store the server device's socket ID as the designated host
 let serverHostSocketId = null;
 let serverHostUsername = null;
+
+// Generate a unique server session ID when server starts
+const serverSessionId = Date.now().toString();
 
 // Function to check if a socket is the server host
 function isServerHost(socketId) {

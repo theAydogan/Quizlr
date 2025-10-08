@@ -58,7 +58,7 @@ const Question = ({
         socket.on("answerSubmitted", (data) => {
             console.log("Answer submitted:", data);
             if (data.isCorrect) {
-                setScore(score + 1);
+                setScore(score + 1 + timeRemaining);
             }
         });
 
@@ -128,6 +128,10 @@ const Question = ({
     const nonHostPlayers = players?.filter(p => !p.isHost) || [];
     const answeredCount = nonHostPlayers.filter(p => p.hasAnswered).length;
     const totalPlayers = nonHostPlayers.length;
+    
+    // Check if current user is the host
+    const currentPlayer = players?.find(p => p.username === username);
+    const isHost = currentPlayer?.isHost || false;
 
     return (
         <div className="question-container">
@@ -160,49 +164,80 @@ const Question = ({
                     </div>
                 )}
 
-                <div className="options-grid">
-                    {questionData.options.map((option) => (
-                        <button
-                            key={option.id}
-                            className={`option-button ${
-                                selectedAnswer === option.id ? 'selected' : ''
-                            } ${
-                                showingAnswer && option.id === correctAnswer
-                                    ? 'correct'
-                                    : ''
-                            } ${
-                                showingAnswer && 
-                                selectedAnswer === option.id && 
-                                option.id !== correctAnswer
-                                    ? 'incorrect'
-                                    : ''
-                            }`}
-                            onClick={() => handleSelectAnswer(option.id)}
-                            disabled={hasAnswered || showingAnswer}
-                        >
-                            <span className="option-letter">
-                                {String.fromCharCode(65 + option.id)}
-                            </span>
-                            <span className="option-text">{option.text}</span>
-                        </button>
-                    ))}
-                </div>
-
-                <div className="button-group">
-                    {!hasAnswered && !showingAnswer ? (
-                        <button 
-                            className="submit-button" 
-                            onClick={handleSubmitAnswer}
-                            disabled={selectedAnswer === null}
-                        >
-                            Submit Answer
-                        </button>
-                    ) : hasAnswered && !showingAnswer ? (
-                        <div className="waiting-message">
-                            ✓ Answer submitted! Waiting for time to expire...
+                {isHost ? (
+                    // Host view - just show the options without interaction
+                    <div>
+                        <div className="host-message">
+                            <h3>🎯 You are the Host</h3>
+                            <p>You don't need to answer. Waiting for players to respond...</p>
                         </div>
-                    ) : null}
-                </div>
+                        <div className="options-grid">
+                            {questionData.options.map((option) => (
+                                <button
+                                    key={option.id}
+                                    className={`option-button ${
+                                        showingAnswer && option.id === correctAnswer
+                                            ? 'correct'
+                                            : ''
+                                    }`}
+                                    disabled={true}
+                                >
+                                    <span className="option-letter">
+                                        {String.fromCharCode(65 + option.id)}
+                                    </span>
+                                    <span className="option-text">{option.text}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                ) : (
+                    // Player view - normal interaction
+                    <>
+                        <div className="options-grid">
+                            {questionData.options.map((option) => (
+                                <button
+                                    key={option.id}
+                                    className={`option-button ${
+                                        selectedAnswer === option.id ? 'selected' : ''
+                                    } ${
+                                        showingAnswer && option.id === correctAnswer
+                                            ? 'correct'
+                                            : ''
+                                    } ${
+                                        showingAnswer && 
+                                        selectedAnswer === option.id && 
+                                        option.id !== correctAnswer
+                                            ? 'incorrect'
+                                            : ''
+                                    }`}
+                                    onClick={() => handleSelectAnswer(option.id)}
+                                    disabled={hasAnswered || showingAnswer}
+                                >
+                                    <span className="option-letter">
+                                        {String.fromCharCode(65 + option.id)}
+                                    </span>
+                                    <span className="option-text">{option.text}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="button-group">
+                            {!hasAnswered && !showingAnswer ? (
+                                <button 
+                                    className="submit-button" 
+                                    onClick={handleSubmitAnswer}
+                                    disabled={selectedAnswer === null}
+                                >
+                                    Submit Answer
+                                </button>
+                            ) : hasAnswered && !showingAnswer ? (
+                                <div className="waiting-message">
+                                    ✓ Answer submitted! Waiting for other players...
+                                </div>
+                            ) : null}
+                        </div>
+                    </>
+                )}
             </div>
 
             <div className="players-sidebar">
