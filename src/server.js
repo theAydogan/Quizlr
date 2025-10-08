@@ -109,6 +109,50 @@ const questions = [
       { id: 3, text: "Lyft" }
     ],
     correctAnswer: 0
+  },
+  {
+    id: 5,
+    question: "What is the default location in which IDL orders are picked up?",
+    options: [
+      { id: 0, text: "Genius Bar" },
+      { id: 1, text: "iPad Case Wall" },
+      { id: 2, text: "On the Bridge" },
+      { id: 3, text: "Table 44" }
+    ],
+    correctAnswer: 1
+  },
+  {
+    id: 6,
+    question: "What are the main applications used in the Operations Scanner Guns?",
+    options: [
+      { id: 0, text: "Runner, Backstage, Fullfillment" },
+      { id: 1, text: "Runner, Mobile Genius, Backstage" },
+      { id: 2, text: "Fullfillment, Presto, IDL" },
+      { id: 3, text: "Running Backstage, Feeling Fullfillment, Eating an Apple Orchard" }
+    ],
+    correctAnswer: 0
+  },
+  {
+  id: 7,
+  question: "Which company provides the large language model integration in Apple Intelligence?",
+  options: [
+    { id: 0, text: "Meta" },
+    { id: 1, text: "OpenAI" },
+    { id: 2, text: "Google" },
+    { id: 3, text: "Anthropic" }
+  ],
+  correctAnswer: 1
+  },
+  {
+  id: 8,
+  question: "Which of these is NOT a language currently support within the beta version of Live Translation for Airpods?",
+  options: [
+    { id: 0, text: "French" },
+    { id: 1, text: "Spanish" },
+    { id: 2, text: "Portuguese (Brazil)" },
+    { id: 3, text: "Arabic" }
+  ],
+  correctAnswer: 3
   }
 ];
 

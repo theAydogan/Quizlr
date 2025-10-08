@@ -22,6 +22,7 @@ const Question = ({
     const [showingAnswer, setShowingAnswer] = useState(false);
     const [questionNumber, setQuestionNumber] = useState(1);
     const [totalQuestions, setTotalQuestions] = useState(5);
+    const [pendingScore, setPendingScore] = useState(0);
 
     useEffect(() => {
         if (!socket) return;
@@ -40,6 +41,7 @@ const Question = ({
             setHasAnswered(false);
             setCorrectAnswer(null);
             setShowingAnswer(false);
+            setPendingScore(0);
         });
 
         // Listen for time updates
@@ -52,13 +54,20 @@ const Question = ({
             console.log("Answer revealed:", data);
             setCorrectAnswer(data.correctAnswer);
             setShowingAnswer(true);
+            
+            // Now reveal the score after answer is shown
+            if (pendingScore > 0) {
+                setScore(score + pendingScore);
+                setPendingScore(0);
+            }
         });
 
-        // Listen for answer submission confirmation
+        // Listen for answer submission confirmation    
         socket.on("answerSubmitted", (data) => {
             console.log("Answer submitted:", data);
             if (data.isCorrect) {
-                setScore(score + 1 + timeRemaining);
+                // Store the score increase but don't update yet
+                setPendingScore(1 + timeRemaining);
             }
         });
 
@@ -83,7 +92,7 @@ const Question = ({
             socket.off("gameOver");
             socket.off("playerList");
         };
-    }, [socket, navigate, setPlayers, setScore, score]);
+    }, [socket, navigate, setPlayers, setScore, score, pendingScore]);
 
     // Handle answer selection
     const handleSelectAnswer = (optionId) => {
@@ -141,7 +150,7 @@ const Question = ({
                     <span className="timer-icon">⏱️</span>
                     <span className="timer-text">{timeRemaining}s</span>
                 </div>
-                <p className="score">Score: {score}</p>
+                {showingAnswer && <p className="score">Score: {score}</p>}
             </div>
 
             <div className="question-content">
